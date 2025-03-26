@@ -1,4 +1,6 @@
+// Code your design here
 `default_nettype none
+`timescale 1ns / 1ps
 
 module tt_um_addon (
     input  wire [7:0] ui_in,    // X input
