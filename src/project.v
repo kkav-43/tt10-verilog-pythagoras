@@ -4,8 +4,8 @@ module tt_um_addon (
     input  wire [7:0] ui_in,    // X input
     input  wire [7:0] uio_in,   // Y input
     output reg  [7:0] uo_out,   // Approximate Square root output
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path
+    output wire [7:0] uio_out,  // Unused IOs
+    output wire [7:0] uio_oe,   // Unused IO enable
     input  wire        ena,      // Enable (ignored)
     input  wire        clk,      // Clock signal
     input  wire        rst_n     // Active-low reset
@@ -15,47 +15,37 @@ module tt_um_addon (
     assign uio_oe  = 8'b0;
 
     reg [15:0] sum_squares;
-    reg [7:0] sqrt_approx;
-    reg [15:0] estimate;
-    reg [15:0] b;
-    integer i;
+    reg [7:0] sqrt_result;
+    reg [15:0] left, right, mid;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             uo_out      <= 8'd0;
             sum_squares <= 16'd0;
-            sqrt_approx <= 8'd0;
-            estimate    <= 16'd0;
-            b           <= 16'd0;
+            sqrt_result <= 8'd0;
         end else begin
+            // Compute sum of squares
             sum_squares <= (ui_in * ui_in) + (uio_in * uio_in);
-            estimate    <= 0;
-            b           <= 16'h4000; // Start from highest power of 4 below 16-bit range
 
-            // Ensure b is within range
-            for (i = 0; i < 15; i = i + 1) begin
-                if (b > sum_squares)
-                    b = b >> 2;
+            // Initialize Binary Search
+            left  <= 0;
+            right <= 255; // Max possible sqrt result for 16-bit numbers
+
+            // Perform 8 iterations of binary search (log2(256) = 8)
+            repeat (8) begin
+                mid = (left + right + 1) >> 1; // mid = (left + right) / 2
+
+                if (mid * mid <= sum_squares)
+                    left = mid;  // Mid is a valid sqrt candidate
+                else
+                    right = mid - 1;  // Reduce search space
             end
 
-            // Approximate square root calculation with constant loop iteration
-            for (i = 0; i < 15; i = i + 1) begin
-                if (b != 0) begin
-                    if (sum_squares >= (estimate + b)) begin
-                        sum_squares = sum_squares - (estimate + b);
-                        estimate = (estimate >> 1) + b;
-                    end else begin
-                        estimate = estimate >> 1;
-                    end
-                    b = b >> 2;
-                end
-            end
-            
-            sqrt_approx <= estimate[7:0];
-            uo_out <= sqrt_approx;
+            sqrt_result <= left; // Final square root value
+            uo_out <= sqrt_result;
         end
     end
 
-    wire _unused = &{ena, 1'b0};
+    wire _unused = &{ena, 1'b0}; // Unused enable signal
 
 endmodule
