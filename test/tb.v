@@ -38,17 +38,17 @@ module tb ();
     ui_in = 0;
     uio_in = 0;
     
-    // Release reset
-    #10 rst_n = 1;
+    // Apply reset for a few clock cycles
+    #20 rst_n = 1;
+    #20;
     
     // Test case 1: X=3, Y=4 (expected sqrt=5)
-    #10;
     ui_in = 8'd3;
     uio_in = 8'd4;
     ena = 1;
     #10 ena = 0;
     
-    // Wait for calculation
+    // Wait for calculation - at least 9 clock cycles (8 steps + output)
     #200;
     
     // Test case 2: X=5, Y=12 (expected sqrt=13)
@@ -66,6 +66,7 @@ module tb ();
   // Monitor outputs
   always @(posedge clk) begin
     if (uo_out != 0)
-      $display("Result for inputs %d, %d is %d", ui_in, uio_in, uo_out);
+      $display("Time=%0t, Inputs: X=%0d, Y=%0d, Output: sqrt=%0d", 
+               $time, ui_in, uio_in, uo_out);
   end
 endmodule
