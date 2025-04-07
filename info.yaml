@@ -1,41 +1,25 @@
+# Project information
 project:
-  title: "Pythagorean Theorem Calculator"
-  author: "KARTHIK"
-  discord: ""
-  description: "Computes hypotenuse using Pythagorean theorem"
+  title: "Euclidean Distance Calculator"
+  description: "Calculates the square root of the sum of squares (Euclidean distance)"
+  author: "Your Name"
+  discord: "your_discord_username"
+  doc_link: "https://github.com/yourusername/your-repo"
+  clock_hz: 10000000  # 10 MHz
   language: "Verilog"
-  clock_hz: 50000000
-  tiles: "1x1"
-  top_module: "tt_um_addon"
-  source_files:
-    - "project.v"
+  picture: "doc/diagram.png"  # Add a diagram of your design if available
+  tags:
+    - "arithmetic"
+    - "calculator"
 
-pinout:
-  ui[0]: "clk"        # Clock signal
-  ui[1]: "rst_n"      # Active-low reset
-  ui[2]: "x[0]"       # LSB of X input
-  ui[3]: "x[1]"
-  ui[4]: "x[2]"
-  ui[5]: "x[3]"
-  ui[6]: "x[4]"
-  ui[7]: "x[5]"
-
-  uio[0]: "x[6]"      # MSB of X input
-  uio[1]: "x[7]"
-  uio[2]: "y[0]"      # LSB of Y input
-  uio[3]: "y[1]"
-  uio[4]: "y[2]"
-  uio[5]: "y[3]"
-  uio[6]: "y[4]"
-  uio[7]: "y[5]"
-
-  uo[0]: "hypotenuse[0]"  # LSB of output
-  uo[1]: "hypotenuse[1]"
-  uo[2]: "hypotenuse[2]"
-  uo[3]: "hypotenuse[3]"
-  uo[4]: "hypotenuse[4]"
-  uo[5]: "hypotenuse[5]"
-  uo[6]: "hypotenuse[6]"
-  uo[7]: "hypotenuse[7]"  # MSB of output
-
-yaml_version: 6
+# Inputs and outputs description
+inputs:
+  - ui_in[7:0]: "X value (8-bit)"
+  - uio_in[7:0]: "Y value (8-bit)"
+  - ena: "Start calculation when high"
+  - clk: "Clock signal"
+  - rst_n: "Active-low reset"
+outputs:
+  - uo_out[7:0]: "Square root result (8-bit)"
+  - uio_out[7:0]: "Unused (set to 0)"
+  - uio_oe[7:0]: "Unused (set to 0)"
