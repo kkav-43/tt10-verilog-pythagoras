@@ -12,55 +12,43 @@ module tt_um_addon (
     input  wire       rst_n     // Active-low reset
 );
 
-    // Set unused outputs to zero
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
 
-    // Internal registers
-    reg [15:0] sum_squares;     // Stores X^2 + Y^2
-    reg [7:0]  left, right;     // Binary search boundaries
-    reg [7:0]  mid;             // Middle point for binary search
-    reg [3:0]  step;            // Step counter for the binary search
-    reg        busy;            // Indicates calculation in progress
+    reg [15:0] sum_squares;
+    reg [7:0]  left, right;
+    reg [7:0]  mid;
+    reg [3:0]  step;
+    reg        busy;
 
-    // Binary search for square root
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            // Reset all registers
-            sum_squares <= 16'b0;
-            left        <= 8'b0;
+            sum_squares <= 0;
+            left        <= 0;
             right       <= 8'd255;
-            mid         <= 8'b0;
-            step        <= 4'b0;
-            uo_out      <= 8'b0;
-            busy        <= 1'b0;
+            mid         <= 0;
+            step        <= 0;
+            uo_out      <= 0;
+            busy        <= 0;
         end else begin
             if (ena && !busy) begin
-                // Start new calculation when enabled and not busy
-                // Calculate X^2 + Y^2 with proper width to avoid overflow
                 sum_squares <= (ui_in * ui_in) + (uio_in * uio_in);
-                left        <= 8'b0;
+                left        <= 0;
                 right       <= 8'd255;
-                step        <= 4'd0;  // Start at 0 for cleaner logic
-                busy        <= 1'b1;
-                uo_out      <= 8'b0;  // Clear output at start
+                step        <= 0;
+                busy        <= 1;
+                uo_out      <= 0;
             end else if (busy) begin
-                if (step < 8) begin  // Less than 8 steps (0-7)
-                    // Calculate midpoint - use blocking to update immediately
+                if (step < 8) begin
                     mid = (left + right + 1) >> 1;
-                    
-                    // Update search boundaries
                     if ((mid * mid) <= sum_squares)
                         left <= mid;
                     else
                         right <= mid - 1;
-                    
-                    // Move to next step
                     step <= step + 1;
                 end else begin
-                    // Final step - output result and clear busy flag
                     uo_out <= left;
-                    busy   <= 1'b0;
+                    busy   <= 0;
                 end
             end
         end
