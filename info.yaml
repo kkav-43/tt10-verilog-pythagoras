@@ -2,12 +2,11 @@
 project:
   title: "Euclidean Distance Calculator"
   description: "Calculates the square root of the sum of squares (Euclidean distance)"
-  author: "Your Name"
+  author: "KARTHIK"
   discord: "your_discord_username"
   doc_link: "https://github.com/yourusername/your-repo"
   clock_hz: 10000000  # 10 MHz
   language: "Verilog"
-  picture: "doc/diagram.png"  # Add a diagram of your design if available
   tags:
     - "arithmetic"
     - "calculator"
