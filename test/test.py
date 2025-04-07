@@ -1,33 +1,47 @@
 import cocotb
-from cocotb.triggers import Timer
+from cocotb.clock import Clock
+from cocotb.triggers import RisingEdge, FallingEdge, Timer
+import math
 
 @cocotb.test()
-async def test_project(dut):
-    """Test sqrt calculation logic"""
-
-    test_cases = [
-        (3, 4, 5),   # sqrt(3^2 + 4^2) = 5
-        (7, 24, 25), # sqrt(7^2 + 24^2) = 25
-        (10, 15, 18), # sqrt(10^2 + 15^2) ≈ 18
-    ]
-
+async def test_sqrt(dut):
+    """Test square root calculation for various input pairs"""
+    
+    # Create clock
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start())
+    
+    # Reset module
     dut.rst_n.value = 0
     dut.ena.value = 0
     dut.ui_in.value = 0
     dut.uio_in.value = 0
-
-    await Timer(20, units="ns")  # ✅ Wait for reset
+    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clk)
     dut.rst_n.value = 1
-    await Timer(10, units="ns")
-
-    dut.ena.value = 1  # ✅ Enable calculations
-
-    for x, y, expected in test_cases:
+    
+    # Test cases
+    test_vectors = [
+        (3, 4, 5),    # 3^2 + 4^2 = 25, sqrt(25) = 5
+        (5, 12, 13),  # 5^2 + 12^2 = 169, sqrt(169) = 13
+        (8, 15, 17),  # 8^2 + 15^2 = 289, sqrt(289) = 17
+        (7, 24, 25),  # 7^2 + 24^2 = 625, sqrt(625) = 25
+    ]
+    
+    for x, y, expected in test_vectors:
+        # Start calculation
         dut.ui_in.value = x
         dut.uio_in.value = y
-        await Timer(50, units="ns")  # ✅ Wait before reading `uo_out`
-
-        output = dut.uo_out.value.integer
-        assert output == expected, f"sqrt({x}^2 + {y}^2) failed: got {output}, expected {expected}"
-
-        print(f"Time = {cocotb.utils.get_sim_time()} ns | x = {x} | y = {y} | sqrt_out = {output}")
+        dut.ena.value = 1
+        await RisingEdge(dut.clk)
+        dut.ena.value = 0
+        
+        # Wait for calculation to complete (max 20 cycles)
+        for _ in range(20):
+            await RisingEdge(dut.clk)
+            if dut.uo_out.value != 0:
+                break
+        
+        # Check result
+        actual = dut.uo_out.value.integer
+        assert actual == expected, f"For inputs ({x},{y}): Expected {expected}, got {actual}"
