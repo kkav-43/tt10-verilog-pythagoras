@@ -17,45 +17,48 @@ module tt_um_addon (
     assign uio_oe  = 8'b0;
 
     // Internal registers
-    reg [15:0] sum_squares;
-    reg [15:0] left, right, mid;
-    reg [3:0]  step;
-    reg        busy;
+    reg [15:0] sum_squares;     // Stores X^2 + Y^2
+    reg [15:0] left, right;     // Binary search boundaries
+    reg [15:0] mid;             // Middle point for binary search
+    reg [3:0]  step;            // Step counter for the binary search
+    reg        busy;            // Indicates calculation in progress
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            sum_squares <= 0;
-            left        <= 0;
-            right       <= 255;
-            mid         <= 0;
-            step        <= 0;
-            uo_out      <= 0;
-            busy        <= 0;
+            // Reset all registers
+            sum_squares <= 16'b0;
+            left        <= 16'b0;
+            right       <= 16'd255;
+            mid         <= 16'b0;
+            step        <= 4'b0;
+            uo_out      <= 8'b0;
+            busy        <= 1'b0;
         end else begin
             if (ena && !busy) begin
-                // Start new calculation
+                // Start new calculation when enabled and not busy
                 sum_squares <= (ui_in * ui_in) + (uio_in * uio_in);
-                left        <= 0;
-                right       <= 255;
-                step        <= 1;
-                busy        <= 1;
+                left        <= 16'b0;
+                right       <= 16'd255;
+                step        <= 4'd1;
+                busy        <= 1'b1;
             end else if (busy) begin
                 if (step <= 8) begin
-                    mid = (left + right + 1) >> 1;
+                    // Binary search algorithm for square root
+                    mid = (left + right + 1) >> 1;  // Use blocking assignment here
+                    
                     if (mid * mid <= sum_squares)
                         left <= mid;
                     else
                         right <= mid - 1;
+                        
                     step <= step + 1;
                 end else begin
+                    // Calculation complete, output result
                     uo_out <= left[7:0];
-                    busy   <= 0;
+                    busy   <= 1'b0;
                 end
             end
         end
     end
-
-    // Unused enable signal bundled for Lint cleanliness
-    wire _unused = &{ena, 1'b0};
 
 endmodule
