@@ -18,43 +18,48 @@ module tt_um_addon (
 
     // Internal registers
     reg [15:0] sum_squares;     // Stores X^2 + Y^2
-    reg [15:0] left, right;     // Binary search boundaries
-    reg [15:0] mid;             // Middle point for binary search
+    reg [7:0]  left, right;     // Binary search boundaries
+    reg [7:0]  mid;             // Middle point for binary search
     reg [3:0]  step;            // Step counter for the binary search
     reg        busy;            // Indicates calculation in progress
 
+    // Binary search for square root
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             // Reset all registers
             sum_squares <= 16'b0;
-            left        <= 16'b0;
-            right       <= 16'd255;
-            mid         <= 16'b0;
+            left        <= 8'b0;
+            right       <= 8'd255;
+            mid         <= 8'b0;
             step        <= 4'b0;
             uo_out      <= 8'b0;
             busy        <= 1'b0;
         end else begin
             if (ena && !busy) begin
                 // Start new calculation when enabled and not busy
+                // Calculate X^2 + Y^2 with proper width to avoid overflow
                 sum_squares <= (ui_in * ui_in) + (uio_in * uio_in);
-                left        <= 16'b0;
-                right       <= 16'd255;
-                step        <= 4'd1;
+                left        <= 8'b0;
+                right       <= 8'd255;
+                step        <= 4'd0;  // Start at 0 for cleaner logic
                 busy        <= 1'b1;
+                uo_out      <= 8'b0;  // Clear output at start
             end else if (busy) begin
-                if (step <= 8) begin
-                    // Binary search algorithm for square root
-                    mid = (left + right + 1) >> 1;  // Use blocking assignment here
+                if (step < 8) begin  // Less than 8 steps (0-7)
+                    // Calculate midpoint - use blocking to update immediately
+                    mid = (left + right + 1) >> 1;
                     
-                    if (mid * mid <= sum_squares)
+                    // Update search boundaries
+                    if ((mid * mid) <= sum_squares)
                         left <= mid;
                     else
                         right <= mid - 1;
-                        
+                    
+                    // Move to next step
                     step <= step + 1;
                 end else begin
-                    // Calculation complete, output result
-                    uo_out <= left[7:0];
+                    // Final step - output result and clear busy flag
+                    uo_out <= left;
                     busy   <= 1'b0;
                 end
             end
