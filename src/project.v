@@ -1,5 +1,5 @@
-`default_nettype none // Disable implicit net declarations
-`timescale 1ns / 1ps  // Define time unit and precision
+`default_nettype none
+`timescale 1ns / 1ps
 
 module tt_um_addon (
     input  wire [7:0] ui_in,    // X input
@@ -7,49 +7,55 @@ module tt_um_addon (
     output reg  [7:0] uo_out,   // Approximate Square Root Output
     output wire [7:0] uio_out,  // Unused IOs (set to 0)
     output wire [7:0] uio_oe,   // Unused IO Enable (set to 0)
-    input  wire        ena,     // Enable (unused)
-    input  wire        clk,     // Clock signal
-    input  wire        rst_n    // Active-low reset
+    input  wire       ena,      // Enable (active high)
+    input  wire       clk,      // Clock signal
+    input  wire       rst_n     // Active-low reset
 );
 
     // Set unused outputs to zero
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
 
-    // Declare registers
-    reg [15:0] sum_squares;  // Store sum of squares (X² + Y²)
-    reg [7:0] sqrt_result;   // Store calculated square root
-    reg [15:0] left, right, mid; // Registers for binary search
+    // Internal registers
+    reg [15:0] sum_squares;
+    reg [15:0] left, right, mid;
+    reg [3:0]  step;
+    reg        busy;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            uo_out      <= 8'd0;  // Reset output
-            sum_squares <= 16'd0; // Reset sum of squares
-            sqrt_result <= 8'd0;  // Reset square root
+            sum_squares <= 0;
+            left        <= 0;
+            right       <= 255;
+            mid         <= 0;
+            step        <= 0;
+            uo_out      <= 0;
+            busy        <= 0;
         end else begin
-            // Compute sum of squares: X² + Y²
-            sum_squares <= (ui_in * ui_in) + (uio_in * uio_in);
-
-            // Binary search initialization
-            left  <= 0;
-            right <= 255; // Maximum possible square root for a 16-bit number
-
-            // Perform 8 iterations of binary search (log2(256) = 8)
-            repeat (8) begin
-                mid = (left + right + 1) >> 1; // mid = (left + right) / 2
-
-                if (mid * mid <= sum_squares)
-                    left = mid;  // Keep mid as a valid sqrt candidate
-                else
-                    right = mid - 1;  // Reduce search space
+            if (ena && !busy) begin
+                // Start new calculation
+                sum_squares <= (ui_in * ui_in) + (uio_in * uio_in);
+                left        <= 0;
+                right       <= 255;
+                step        <= 1;
+                busy        <= 1;
+            end else if (busy) begin
+                if (step <= 8) begin
+                    mid = (left + right + 1) >> 1;
+                    if (mid * mid <= sum_squares)
+                        left <= mid;
+                    else
+                        right <= mid - 1;
+                    step <= step + 1;
+                end else begin
+                    uo_out <= left[7:0];
+                    busy   <= 0;
+                end
             end
-
-            sqrt_result <= left; // Assign final square root value
-            uo_out <= sqrt_result;
         end
     end
 
-    // Unused enable signal
-    wire _unused = &{ena, 1'b0}; 
+    // Unused enable signal bundled for Lint cleanliness
+    wire _unused = &{ena, 1'b0};
 
 endmodule
