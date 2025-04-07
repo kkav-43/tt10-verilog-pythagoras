@@ -7,7 +7,7 @@ project:
   language:     "Verilog"                            # HDL used
   clock_hz:     10000000                             # 10 MHz clock
   tiles:        "1x1"                                # Tile size
-  top_module:   "tt_um_yourgithubusername_distcalc" # Replace with your GitHub username for uniqueness
+  top_module:   "tt_um_addon" # Replace with your GitHub username for uniqueness
 
   # Source files list
   source_files:
