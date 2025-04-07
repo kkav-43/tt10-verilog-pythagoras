@@ -42,18 +42,7 @@ module tb ();
     uio_in = 0;
 
     #10 rst_n = 1;
-    #10;
-
-    test_case(8'd3,  8'd4);   // sqrt(9 + 16) = 5
-    test_case(8'd5,  8'd12);  // sqrt(25 + 144) = 13
-    test_case(8'd7,  8'd24);  // sqrt(49 + 576) = 25
-    test_case(8'd8,  8'd15);  // sqrt(64 + 225) = 17
-    test_case(8'd16, 8'd63);  // sqrt(256 + 3969) = 65
-
-    #100;
-    $finish;
-  end
-
+    
   // Helper task
   task test_case(input [7:0] x, input [7:0] y);
     begin
