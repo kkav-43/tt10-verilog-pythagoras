@@ -4,11 +4,6 @@
 
 This project computes the **hypotenuse** using the **Pythagorean theorem**:
 
-![image](https://github.com/user-attachments/assets/01f981d8-370a-4349-bcab-824e9c09c883)
-
-
-where `x` and `y` are 8-bit integer inputs. The design utilizes **binary search** to approximate the square root, making it efficient for hardware implementation.
-
 ## Hardware Implementation
 
 ### **Modules**
