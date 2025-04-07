@@ -44,17 +44,6 @@ pinout:
   uo[6]:  "Result[6]"
   uo[7]:  "Result[7]"
 
-  # Bidirectional pins (unused)
-  # Marking bidirectional pins as unused by default unless otherwise specified
-  # These are often left blank if not needed
-  uio_oe[0]: ""
-  uio_oe[1]: ""
-  uio_oe[2]: ""
-  uio_oe[3]: ""
-  uio_oe[4]: ""
-  uio_oe[5]: ""
-  uio_oe[6]: ""
-  uio_oe[7]: ""
 
 # Do not change!
 yaml_version: 6
