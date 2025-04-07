@@ -13,7 +13,7 @@ This TinyTapeout project implements a digital circuit that calculates the Euclid
 
 - `ui_in[7:0]`: X value (8-bit integer)
 - `uio_in[7:0]`: Y value (8-bit integer)
-- `ena`: Start calculation when high
+- `ena`: Start calculation when high for one clock cycle
 - `clk`: Clock signal
 - `rst_n`: Active-low reset
 
@@ -27,5 +27,9 @@ This TinyTapeout project implements a digital circuit that calculates the Euclid
 1. Set the X value on `ui_in[7:0]`
 2. Set the Y value on `uio_in[7:0]`
 3. Pulse `ena` high for one clock cycle
-4. Wait for calculation to complete (up to 9 clock cycles)
+4. Wait for calculation to complete (8 clock cycles)
 5. Read the result from `uo_out[7:0]`
+
+## Implementation Details
+
+The design uses an iterative binary search algorithm to calculate the square root. It takes 8 clock cycles to compute the result after the `ena` signal is asserted.
